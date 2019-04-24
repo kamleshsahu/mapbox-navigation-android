@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-    <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="${enableCrashReporting}" />
+    <!--<meta-data android:name="firebase_crashlytics_collection_enabled" android:value="${enableCrashReporting}" />-->
 
     <application
         android:name=".NavigationApplication"
@@ -20,17 +20,18 @@
             android:name=".example.ui.ExampleActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustNothing">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-                <action android:name="android.intent.action.VIEW"/>
-            </intent-filter>
+
         </activity>
 
         <activity android:name=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".NavigationSettingsActivity"/>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.VIEW"/>
+            </intent-filter>
         </activity>
 
         <activity
@@ -141,6 +142,7 @@
             android:value="api-events-staging.tilestream.net" />
         <meta-data
             android:name="com.mapbox.TestEventsAccessToken"
-            android:value="pk.eyJ1IjoiYmxzdGFnaW5nIiwiYSI6ImNpdDF3OHpoaTAwMDcyeXA5Y3Z0Nmk2dzEifQ.0IfB7v5Qbm2MGVYt8Kb8fg" />
+            android:value="pk.eyJ1IjoibXNvZnR0ZXhhc2NvbnN1bHRhbmN5IiwiYSI6ImNqcXBpaDdvdDAxcmQ0MnJ0OGxxODJyMG0ifQ.yWdirT8JDDeACaSfA9NF3A" />
+
     </application>
 </manifest>

@@ -7,6 +7,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.res.Resources;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +19,11 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
 
+import com.WeatherService.Interface.WeatherServiceListener;
+import com.WeatherService.Models.mPoint;
+import com.WeatherService.Models.mStep;
+import com.WeatherService.WeatherService;
+import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.api.directions.v5.models.RouteOptions;
 import com.mapbox.geojson.Point;
@@ -34,6 +40,8 @@ import com.mapbox.services.android.navigation.ui.v5.instruction.NavigationAlertV
 import com.mapbox.services.android.navigation.ui.v5.map.NavigationMapboxMap;
 import com.mapbox.services.android.navigation.ui.v5.map.NavigationMapboxMapInstanceState;
 import com.mapbox.services.android.navigation.ui.v5.map.WayNameView;
+import com.mapbox.services.android.navigation.ui.v5.myMethods.CustomLayer;
+import com.mapbox.services.android.navigation.ui.v5.myMethods.weatherIconMap;
 import com.mapbox.services.android.navigation.ui.v5.summary.SummaryBottomSheet;
 import com.mapbox.services.android.navigation.v5.location.replay.ReplayRouteLocationEngine;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigation;
@@ -42,6 +50,9 @@ import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationTimeFormat;
 import com.mapbox.services.android.navigation.v5.utils.DistanceFormatter;
 import com.mapbox.services.android.navigation.v5.utils.LocaleUtils;
+
+import java.util.Calendar;
+import java.util.Map;
 
 /**
  * View that creates the drop-in UI.
@@ -66,7 +77,7 @@ import com.mapbox.services.android.navigation.v5.utils.LocaleUtils;
  * @since 0.7.0
  */
 public class NavigationView extends CoordinatorLayout implements LifecycleObserver, OnMapReadyCallback,
-  NavigationContract.View {
+  NavigationContract.View,WeatherServiceListener {
 
   private static final String MAP_INSTANCE_STATE_KEY = "navgation_mapbox_map_instance_state";
   private static final int INVALID_STATE = 0;
@@ -90,6 +101,17 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
   private boolean isMapInitialized;
   private boolean isSubscribed;
 
+  CustomLayer customLayer;
+  int selectedroute;
+  String timezone;
+  String travelmode;
+  long jstarttime;
+  long interval;
+
+  DirectionsRoute directionsRoute;
+
+
+
   public NavigationView(Context context) {
     this(context, null);
   }
@@ -102,6 +124,11 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
     super(context, attrs, defStyleAttr);
     ThemeSwitcher.setTheme(context, attrs);
     initializeView();
+    timezone= Calendar.getInstance().getTimeZone().getID();
+    travelmode= DirectionsCriteria.PROFILE_DRIVING;
+    jstarttime=Calendar.getInstance().getTimeInMillis();
+    interval = 10000;
+    selectedroute = 0;
   }
 
   /**
@@ -220,6 +247,8 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
     mapboxMap.setStyle(ThemeSwitcher.retrieveMapStyle(getContext()), new Style.OnStyleLoaded() {
       @Override
       public void onStyleLoaded(@NonNull Style style) {
+
+        customLayer = new CustomLayer(style,getContext());
         initializeNavigationMap(mapView, mapboxMap);
         initializeWayNameListener();
         onNavigationReadyCallback.onNavigationReady(navigationViewModel.isRunning());
@@ -269,9 +298,27 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
   @Override
   public void drawRoute(DirectionsRoute directionsRoute) {
     if (navigationMap != null) {
+      this.directionsRoute=directionsRoute;
       navigationMap.drawRoute(directionsRoute);
+      new Task().execute();
     }
   }
+
+  class Task extends AsyncTask<Object,Object,Object> {
+
+
+    @Override
+    protected Object doInBackground(Object[] objects) {
+      WeatherService weatherServiceCall;
+      weatherServiceCall = new WeatherService(directionsRoute,timezone,interval,jstarttime,travelmode);
+      weatherServiceCall.setListener(NavigationView.this);
+      weatherServiceCall.calc_data();
+
+      return null;
+    }
+
+  }
+
 
   @Override
   public void addMarker(Point position) {
@@ -709,5 +756,37 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
     navigationViewModel.onDestroy(isChangingConfigurations());
     ImageCreator.getInstance().shutdown();
     navigationMap = null;
+  }
+
+  @Override
+  public void onError(String etitle, String emsg) {
+
+  }
+
+  @Override
+  public void OnWeatherDataListReady(Map<Integer, mStep> msteps) {
+
+  }
+
+  @Override
+  public void onWeatherOfPointReady(int id, mPoint mpoint) {
+    String pid =id+"";
+ //   layeridlist.add(pid);
+    customLayer.addMarkers(new weatherIconMap().getWeatherResource(mpoint.getWeather_data().getIcon()), pid, pid,
+            Point.fromLngLat(mpoint.getPoint().longitude(), mpoint.getPoint().latitude()), pid, pid);
+  }
+
+  @Override
+  public void onWeatherOfStepReady(int step_id, mStep mstep) {
+
+    String id=step_id+"";
+ //   layeridlist.add(id);
+    customLayer.addMarkers(new weatherIconMap().getWeatherResource(mstep.getWeatherdata().getIcon()), id, id, mstep.getStep().maneuver().location(), id, id);
+
+  }
+
+  @Override
+  public void onWeatherDataListProgressChange(int progress) {
+
   }
 }

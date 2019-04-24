@@ -11,7 +11,7 @@ import com.mapbox.services.android.navigation.testapp.example.utils.DelegatesExt
 import com.squareup.leakcanary.LeakCanary
 import timber.log.Timber
 
-private const val DEFAULT_MAPBOX_ACCESS_TOKEN = "YOUR_MAPBOX_ACCESS_TOKEN_GOES_HERE"
+private const val DEFAULT_MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoibXNvZnR0ZXhhc2NvbnN1bHRhbmN5IiwiYSI6ImNqcXBpaDdvdDAxcmQ0MnJ0OGxxODJyMG0ifQ.yWdirT8JDDeACaSfA9NF3A"
 
 class NavigationApplication : MultiDexApplication() {
 
