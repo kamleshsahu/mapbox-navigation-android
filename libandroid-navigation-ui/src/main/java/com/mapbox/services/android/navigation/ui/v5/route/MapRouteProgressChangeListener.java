@@ -3,6 +3,7 @@ package com.mapbox.services.android.navigation.ui.v5.route;
 import android.location.Location;
 
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
+import com.mapbox.geojson.Point;
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
 
@@ -19,6 +20,8 @@ class MapRouteProgressChangeListener implements ProgressChangeListener {
     this.routeArrow = routeArrow;
   }
 
+
+
   @Override
   public void onProgressChange(Location location, RouteProgress routeProgress) {
     if (!isVisible) {
@@ -29,6 +32,7 @@ class MapRouteProgressChangeListener implements ProgressChangeListener {
     int primaryRouteIndex = routeLine.retrievePrimaryRouteIndex();
     addNewRoute(currentRoute, directionsRoutes, primaryRouteIndex);
     routeArrow.addUpcomingManeuverArrow(routeProgress);
+
   }
 
   void updateVisibility(boolean isVisible) {

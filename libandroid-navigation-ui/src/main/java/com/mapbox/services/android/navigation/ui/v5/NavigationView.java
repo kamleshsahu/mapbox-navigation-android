@@ -76,8 +76,12 @@ import java.util.Map;
  *
  * @since 0.7.0
  */
-public class NavigationView extends CoordinatorLayout implements LifecycleObserver, OnMapReadyCallback,
-  NavigationContract.View,WeatherServiceListener {
+public class NavigationView extends CoordinatorLayout implements
+        LifecycleObserver,
+        OnMapReadyCallback,
+  NavigationContract.View,
+        WeatherServiceListener
+{
 
   private static final String MAP_INSTANCE_STATE_KEY = "navgation_mapbox_map_instance_state";
   private static final int INVALID_STATE = 0;
@@ -109,8 +113,8 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
   long interval;
 
   DirectionsRoute directionsRoute;
-
-
+  Map<Integer, mStep> msteps;
+  WeatherService ws;
 
   public NavigationView(Context context) {
     this(context, null);
@@ -127,7 +131,7 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
     timezone= Calendar.getInstance().getTimeZone().getID();
     travelmode= DirectionsCriteria.PROFILE_DRIVING;
     jstarttime=Calendar.getInstance().getTimeInMillis();
-    interval = 10000;
+    interval = 1000;
     selectedroute = 0;
   }
 
@@ -249,6 +253,7 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
       public void onStyleLoaded(@NonNull Style style) {
 
         customLayer = new CustomLayer(style,getContext());
+
         initializeNavigationMap(mapView, mapboxMap);
         initializeWayNameListener();
         onNavigationReadyCallback.onNavigationReady(navigationViewModel.isRunning());
@@ -298,25 +303,15 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
   @Override
   public void drawRoute(DirectionsRoute directionsRoute) {
     if (navigationMap != null) {
-      this.directionsRoute=directionsRoute;
       navigationMap.drawRoute(directionsRoute);
-      new Task().execute();
+
+      if(this.directionsRoute==null) {
+        this.directionsRoute = directionsRoute;
+        ws = new WeatherService(directionsRoute, timezone, interval, jstarttime, travelmode);
+        ws.setListener(NavigationView.this);
+        ws.execute();
+      }
     }
-  }
-
-  class Task extends AsyncTask<Object,Object,Object> {
-
-
-    @Override
-    protected Object doInBackground(Object[] objects) {
-      WeatherService weatherServiceCall;
-      weatherServiceCall = new WeatherService(directionsRoute,timezone,interval,jstarttime,travelmode);
-      weatherServiceCall.setListener(NavigationView.this);
-      weatherServiceCall.calc_data();
-
-      return null;
-    }
-
   }
 
 
@@ -728,6 +723,7 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
 
   private void setupNavigationMapboxMap(NavigationViewOptions options) {
     navigationMap.updateWaynameQueryMap(options.waynameChipEnabled());
+
   }
 
   /**
@@ -741,7 +737,6 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
   private void subscribeViewModels() {
     instructionView.subscribe(navigationViewModel);
     summaryBottomSheet.subscribe(navigationViewModel);
-
     NavigationViewSubscriber subscriber = new NavigationViewSubscriber(navigationPresenter);
     subscriber.subscribe(((LifecycleOwner) getContext()), navigationViewModel);
     isSubscribed = true;
@@ -765,7 +760,7 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
 
   @Override
   public void OnWeatherDataListReady(Map<Integer, mStep> msteps) {
-
+       this.msteps=msteps;
   }
 
   @Override
@@ -789,4 +784,6 @@ public class NavigationView extends CoordinatorLayout implements LifecycleObserv
   public void onWeatherDataListProgressChange(int progress) {
 
   }
+
+
 }

@@ -67,7 +67,8 @@ import timber.log.Timber;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
-public class NavigationLauncherActivity extends AppCompatActivity implements OnMapReadyCallback,
+public class NavigationLauncherActivity extends AppCompatActivity
+        implements OnMapReadyCallback,
   MapboxMap.OnMapLongClickListener, OnRouteSelectionChangeListener {
 
   private static final int CAMERA_ANIMATION_DURATION = 1000;
@@ -143,7 +144,7 @@ public class NavigationLauncherActivity extends AppCompatActivity implements OnM
     mapView.onStart();
   }
 
-  @SuppressWarnings( {"MissingPermission"})
+  @SuppressWarnings({"MissingPermission"})
   @Override
   public void onResume() {
     super.onResume();

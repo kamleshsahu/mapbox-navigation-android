@@ -13,6 +13,7 @@ import android.support.annotation.StyleRes;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.services.android.navigation.ui.v5.NavigationView;
 import com.mapbox.services.android.navigation.ui.v5.R;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigation;
 
@@ -116,6 +117,7 @@ public class NavigationMapRoute implements LifecycleObserver {
   public NavigationMapRoute(@Nullable MapboxNavigation navigation, @NonNull MapView mapView,
                             @NonNull MapboxMap mapboxMap, @StyleRes int styleRes) {
     this(navigation, mapView, mapboxMap, styleRes, null);
+
   }
 
   /**
@@ -378,4 +380,6 @@ public class NavigationMapRoute implements LifecycleObserver {
     mapboxMap.addOnMapClickListener(mapRouteClickListener);
     mapRouteProgressChangeListener = new MapRouteProgressChangeListener(routeLine, routeArrow);
   }
+
+
 }
