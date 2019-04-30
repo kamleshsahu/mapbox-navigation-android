@@ -343,7 +343,8 @@ public class NavigationLauncherActivity extends AppCompatActivity
     }
 
     NavigationLauncherOptions.Builder optionsBuilder = NavigationLauncherOptions.builder()
-      .shouldSimulateRoute(getShouldSimulateRouteFromSharedPreferences());
+    //  .shouldSimulateRoute(getShouldSimulateRouteFromSharedPreferences());
+            .shouldSimulateRoute(true);
     CameraPosition initialPosition = new CameraPosition.Builder()
       .target(new LatLng(currentLocation.latitude(), currentLocation.longitude()))
       .zoom(INITIAL_ZOOM)

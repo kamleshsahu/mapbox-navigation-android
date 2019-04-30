@@ -10,8 +10,16 @@ import android.support.v7.app.AppCompatActivity;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
+import com.mapbox.services.android.navigation.v5.milestone.Milestone;
+import com.mapbox.services.android.navigation.v5.milestone.MilestoneEventListener;
+import com.mapbox.services.android.navigation.v5.milestone.StepMilestone;
+import com.mapbox.services.android.navigation.v5.milestone.TriggerProperty;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationConstants;
+import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Serves as a launching point for the custom drop-in UI, {@link NavigationView}.
@@ -20,6 +28,7 @@ import com.mapbox.services.android.navigation.v5.navigation.NavigationConstants;
  */
 public class MapboxNavigationActivity extends AppCompatActivity
         implements OnNavigationReadyCallback,
+        MilestoneEventListener,
   NavigationListener
 {
 
@@ -32,6 +41,8 @@ public class MapboxNavigationActivity extends AppCompatActivity
     setContentView(R.layout.activity_navigation);
     navigationView = findViewById(R.id.navigationView);
     navigationView.onCreate(savedInstanceState);
+    navigationView.setActivity(this);
+
     initialize();
   }
 
@@ -95,6 +106,7 @@ public class MapboxNavigationActivity extends AppCompatActivity
   public void onNavigationReady(boolean isRunning) {
     NavigationViewOptions.Builder options = NavigationViewOptions.builder();
     options.navigationListener(this);
+    options.milestoneEventListener(this);
     extractRoute(options);
     extractConfiguration(options);
     options.navigationOptions(MapboxNavigationOptions.builder().build());
@@ -146,5 +158,30 @@ public class MapboxNavigationActivity extends AppCompatActivity
   private void finishNavigation() {
     NavigationLauncher.cleanUpPreferences(this);
     finish();
+  }
+
+  List<Milestone> mycustomMilestone(){
+
+   List<Milestone> list=new ArrayList<>();
+   list.add(new StepMilestone.Builder()
+            .setIdentifier(TriggerProperty.NEW_STEP)
+            .build());
+   return list;
+  }
+
+  int prev=-1;
+  @Override
+  public void onMilestoneEvent(RouteProgress routeProgress, String instruction, Milestone milestone) {
+  //  System.out.println("milestone instruction :"+instruction);
+  //  System.out.println("milestone :"+new Gson().toJson(milestone));
+
+    if(prev!=routeProgress.currentLegProgress().stepIndex()) {
+      System.out.println("current step :" + routeProgress.currentLegProgress().stepIndex());
+      System.out.println("next step dur :"+routeProgress.currentLegProgress().currentStep().duration());
+      System.out.println("duration remaining :"+routeProgress.durationRemaining());
+      prev=routeProgress.currentLegProgress().stepIndex();
+
+    }
+
   }
 }
