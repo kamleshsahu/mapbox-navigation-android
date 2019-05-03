@@ -783,6 +783,7 @@ public class NavigationView extends CoordinatorLayout implements
   public void OnWeatherDataListReady(Map<Integer, mStep> msteps) {
 
        this.msteps=msteps;
+
   }
 
   @Override
@@ -811,6 +812,9 @@ public class NavigationView extends CoordinatorLayout implements
   }
 
   void updateWeather(DirectionsRoute route, int currStep, StepCorrection correction){
+
+    if(wus!=null)
+    Log.d("asynctask status:",wus.getStatus().name());
 
       if(wus==null || wus.getStatus()!=AsyncTask.Status.RUNNING || wus.getStatus()!=AsyncTask.Status.PENDING) {
         Log.d("updating weather :",currStep+"");

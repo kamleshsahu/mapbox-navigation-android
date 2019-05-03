@@ -194,7 +194,9 @@ public class MapboxNavigationActivity extends AppCompatActivity
 
     if(milestone.getIdentifier()==1000){
      setnextMilestone(1000);
-     navigationView.updateWeather(routeProgress.directionsRoute(),routeProgress.currentLegProgress().stepIndex(),null);
+     navigationView.updateWeather(routeProgress.directionsRoute(),
+             routeProgress.currentLegProgress().stepIndex(),
+             null);
     }
 
   }
@@ -215,16 +217,23 @@ public class MapboxNavigationActivity extends AppCompatActivity
 
     Log.d("dist travelled :",String.valueOf(routeProgress.currentLegProgress().currentStepProgress().distanceTraveled()));
 
-
     if(routeProgress.currentLegProgress().currentStepProgress().distanceTraveled()>=getMilestone()){
       setnextMilestone(getMilestone()+1000);
-      int currStep=routeProgress.currentLegProgress().stepIndex();
-      int newdist=(int)routeProgress.currentLegProgress().currentStepProgress().distanceRemaining();
-      int newduration=(int)routeProgress.currentLegProgress().currentStepProgress().durationRemaining();
-      Point newlocation=Point.fromLngLat(location.getLongitude(),location.getLatitude());
-      StepCorrection correction=new StepCorrection(newdist,newduration,newlocation);
-      navigationView.updateWeather(routeProgress.directionsRoute(),routeProgress.currentLegProgress().stepIndex(),correction);
+
+      navigationView.updateWeather(routeProgress.directionsRoute()
+              ,routeProgress.currentLegProgress().stepIndex(),
+              getCorrection(location,routeProgress));
     }
 
   }
+
+  StepCorrection getCorrection(Location location,RouteProgress routeProgress){
+    int newdist=(int)routeProgress.currentLegProgress().currentStepProgress().distanceRemaining();
+    int newduration=(int)routeProgress.currentLegProgress().currentStepProgress().durationRemaining();
+    Point newlocation=Point.fromLngLat(location.getLongitude(),location.getLatitude());
+    int distfrom_stepstart=(int)routeProgress.currentLegProgress().currentStepProgress().distanceTraveled();
+    return new StepCorrection(newdist,newduration,newlocation,distfrom_stepstart);
+  }
+
+
 }
