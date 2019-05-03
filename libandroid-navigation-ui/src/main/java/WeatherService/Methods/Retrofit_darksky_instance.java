@@ -1,7 +1,5 @@
 package WeatherService.Methods;
 
-import com.mapboxweather.kamleshsahu.mapboxdemo.Interface.ApiInterface;
-
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -15,7 +13,7 @@ import static WeatherService.Constants.DarkSky_BaseURL;
  */
 
 public class Retrofit_darksky_instance {
-    public static ApiInterface apiService;
+
     public static Retrofit retrofit;
     public Retrofit_darksky_instance() {
         super();

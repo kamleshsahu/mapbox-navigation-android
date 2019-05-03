@@ -1,25 +1,33 @@
 package com.mapbox.services.android.navigation.ui.v5;
 
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
+import com.mapbox.api.directions.v5.models.LegStep;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
 import com.mapbox.services.android.navigation.v5.milestone.Milestone;
 import com.mapbox.services.android.navigation.v5.milestone.MilestoneEventListener;
 import com.mapbox.services.android.navigation.v5.milestone.StepMilestone;
+import com.mapbox.services.android.navigation.v5.milestone.Trigger;
 import com.mapbox.services.android.navigation.v5.milestone.TriggerProperty;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationConstants;
+import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import WeatherService.Models.StepCorrection;
 
 /**
  * Serves as a launching point for the custom drop-in UI, {@link NavigationView}.
@@ -29,10 +37,17 @@ import java.util.List;
 public class MapboxNavigationActivity extends AppCompatActivity
         implements OnNavigationReadyCallback,
         MilestoneEventListener,
-  NavigationListener
+  NavigationListener,
+        ProgressChangeListener
 {
 
   private NavigationView navigationView;
+
+  int nextMilestone;
+
+  public MapboxNavigationActivity() {
+    nextMilestone = 0;
+  }
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,7 +57,6 @@ public class MapboxNavigationActivity extends AppCompatActivity
     navigationView = findViewById(R.id.navigationView);
     navigationView.onCreate(savedInstanceState);
     navigationView.setActivity(this);
-
     initialize();
   }
 
@@ -106,9 +120,11 @@ public class MapboxNavigationActivity extends AppCompatActivity
   public void onNavigationReady(boolean isRunning) {
     NavigationViewOptions.Builder options = NavigationViewOptions.builder();
     options.navigationListener(this);
-    options.milestoneEventListener(this);
     extractRoute(options);
+    options.progressChangeListener(this);
     extractConfiguration(options);
+    options.milestones(mycustomMilestone());
+    options.milestoneEventListener(this);
     options.navigationOptions(MapboxNavigationOptions.builder().build());
     navigationView.startNavigation(options.build());
   }
@@ -137,9 +153,12 @@ public class MapboxNavigationActivity extends AppCompatActivity
     }
   }
 
+  List<LegStep> steps;
   private void extractRoute(NavigationViewOptions.Builder options) {
     DirectionsRoute route = NavigationLauncher.extractRoute(this);
+    steps = route.legs().get(0).steps();
     options.directionsRoute(route);
+
   }
 
   private void extractConfiguration(NavigationViewOptions.Builder options) {
@@ -160,27 +179,51 @@ public class MapboxNavigationActivity extends AppCompatActivity
     finish();
   }
 
+
   List<Milestone> mycustomMilestone(){
 
-   List<Milestone> list=new ArrayList<>();
-   list.add(new StepMilestone.Builder()
-            .setIdentifier(TriggerProperty.NEW_STEP)
-            .build());
-   return list;
+    List<Milestone> list=new ArrayList<>();
+          list.add(new StepMilestone.Builder().setIdentifier(1000)
+          .setTrigger(Trigger.eq(TriggerProperty.NEW_STEP,1)).build());
+    return list;
   }
 
-  int prev=-1;
   @Override
   public void onMilestoneEvent(RouteProgress routeProgress, String instruction, Milestone milestone) {
-  //  System.out.println("milestone instruction :"+instruction);
-  //  System.out.println("milestone :"+new Gson().toJson(milestone));
 
-    if(prev!=routeProgress.currentLegProgress().stepIndex()) {
-      System.out.println("current step :" + routeProgress.currentLegProgress().stepIndex());
-      System.out.println("next step dur :"+routeProgress.currentLegProgress().currentStep().duration());
-      System.out.println("duration remaining :"+routeProgress.durationRemaining());
-      prev=routeProgress.currentLegProgress().stepIndex();
 
+    if(milestone.getIdentifier()==1000){
+     setnextMilestone(1000);
+     navigationView.updateWeather(routeProgress.directionsRoute(),routeProgress.currentLegProgress().stepIndex(),null);
+    }
+
+  }
+
+
+
+  void setnextMilestone(int val){
+    synchronized(this){
+      this.nextMilestone += val;
+    }
+  }
+   int getMilestone(){
+    return nextMilestone;
+  }
+
+  @Override
+  public void onProgressChange(Location location, RouteProgress routeProgress) {
+
+    Log.d("dist travelled :",String.valueOf(routeProgress.currentLegProgress().currentStepProgress().distanceTraveled()));
+
+
+    if(routeProgress.currentLegProgress().currentStepProgress().distanceTraveled()>=getMilestone()){
+      setnextMilestone(getMilestone()+1000);
+      int currStep=routeProgress.currentLegProgress().stepIndex();
+      int newdist=(int)routeProgress.currentLegProgress().currentStepProgress().distanceRemaining();
+      int newduration=(int)routeProgress.currentLegProgress().currentStepProgress().durationRemaining();
+      Point newlocation=Point.fromLngLat(location.getLongitude(),location.getLatitude());
+      StepCorrection correction=new StepCorrection(newdist,newduration,newlocation);
+      navigationView.updateWeather(routeProgress.directionsRoute(),routeProgress.currentLegProgress().stepIndex(),correction);
     }
 
   }

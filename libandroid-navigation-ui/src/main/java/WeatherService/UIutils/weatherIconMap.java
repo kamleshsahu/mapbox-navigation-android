@@ -1,11 +1,11 @@
 package WeatherService.UIutils;
 
-import com.mapboxweather.kamleshsahu.mapboxdemo.R;
+
+import com.mapbox.services.android.navigation.ui.v5.R;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static WeatherService.Constants.*;
 import static WeatherService.Constants.WEATHER_CLEAR_DAY;
 import static WeatherService.Constants.WEATHER_CLEAR_NIGHT;
 import static WeatherService.Constants.WEATHER_CLOUDY;
@@ -27,7 +27,7 @@ public class weatherIconMap {
     public weatherIconMap() {
         iconMap=new HashMap<>();
 
-        iconMap.put(WEATHER_CLEAR_DAY,R.drawable.clear_day);
+        iconMap.put(WEATHER_CLEAR_DAY, R.drawable.clear_day);
         iconMap.put(WEATHER_CLOUDY,R.drawable.cloudy);
 
         iconMap.put(WEATHER_CLEAR_NIGHT,R.drawable.clear_night);

@@ -81,8 +81,8 @@ public class VoiceInstructionLoader {
       mapboxSpeechBuilder = MapboxSpeech.builder()
         .accessToken(accessToken)
         .language(language)
-        .cache(cache)
-        .interceptor(provideOfflineCacheInterceptor());
+        .cache(cache);
+      //  .interceptor(provideOfflineCacheInterceptor());
     }
   }
 

@@ -69,6 +69,7 @@ public class EmbeddedNavigationActivity extends AppCompatActivity implements OnN
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_embedded_navigation);
     navigationView = findViewById(R.id.navigationView);
+    navigationView.setActivity(this);
     fabNightModeToggle = findViewById(R.id.fabToggleNightMode);
     speedWidget = findViewById(R.id.speed_limit);
     spacer = findViewById(R.id.spacer);

@@ -7,6 +7,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.res.Resources;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,13 +16,16 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
+import com.mapbox.api.directions.v5.DirectionsCriteria;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.api.directions.v5.models.RouteOptions;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -43,14 +47,18 @@ import com.mapbox.services.android.navigation.v5.navigation.NavigationTimeFormat
 import com.mapbox.services.android.navigation.v5.utils.DistanceFormatter;
 import com.mapbox.services.android.navigation.v5.utils.LocaleUtils;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 
 import WeatherService.Interface.WeatherServiceListener;
+import WeatherService.Models.StepCorrection;
 import WeatherService.Models.mPoint;
 import WeatherService.Models.mStep;
 import WeatherService.UIutils.weatherIconMap;
 import WeatherService.UIutils.weatherUI_utils;
-
+import WeatherService.WeatherUpdateService;
 
 
 /**
@@ -78,8 +86,8 @@ import WeatherService.UIutils.weatherUI_utils;
 public class NavigationView extends CoordinatorLayout implements
         LifecycleObserver,
         OnMapReadyCallback,
-  NavigationContract.View
-        ,
+  NavigationContract.View,
+        MapboxMap.OnMapClickListener,
         WeatherServiceListener
 {
 
@@ -112,12 +120,13 @@ public class NavigationView extends CoordinatorLayout implements
   long jstarttime;
   long interval;
 
-public static String layerids[];
-public static Boolean layeridCreated;
+
+  List<String> layeridlist;
+
 
   DirectionsRoute directionsRoute;
   Map<Integer, mStep> msteps;
-//  WeatherService ws;
+  WeatherUpdateService wus;
 
   public NavigationView(Context context) {
     this(context, null);
@@ -131,16 +140,17 @@ public static Boolean layeridCreated;
     super(context, attrs, defStyleAttr);
     ThemeSwitcher.setTheme(context, attrs);
     initializeView();
-//    timezone= Calendar.getInstance().getTimeZone().getID();
-//    travelmode= DirectionsCriteria.PROFILE_DRIVING;
-//    jstarttime=Calendar.getInstance().getTimeInMillis();
-//    interval = 1000;
-//    selectedroute = 0;
+    timezone= Calendar.getInstance().getTimeZone().getID();
+    travelmode= DirectionsCriteria.PROFILE_DRIVING;
+    interval = 1000;
+    selectedroute = 0;
+    layeridlist=new ArrayList<>();
+
   }
 
   Activity activity;
 
-  void setActivity(Activity activity){
+  public void setActivity(Activity activity){
     this.activity=activity;
   }
 
@@ -221,6 +231,8 @@ public static Boolean layeridCreated;
    * be in {@link android.support.v4.app.Fragment#onDestroyView()}.
    */
   public void onDestroy() {
+    if(wus!=null)
+      wus.cancel(true);
     shutdown();
   }
 
@@ -257,6 +269,7 @@ public static Boolean layeridCreated;
    */
   @Override
   public void onMapReady(final MapboxMap mapboxMap) {
+
     mapboxMap.setStyle(ThemeSwitcher.retrieveMapStyle(getContext()), new Style.OnStyleLoaded() {
       @Override
       public void onStyleLoaded(@NonNull Style style) {
@@ -266,8 +279,10 @@ public static Boolean layeridCreated;
         initializeWayNameListener();
         onNavigationReadyCallback.onNavigationReady(navigationViewModel.isRunning());
         isMapInitialized = true;
+
       }
     });
+    mapboxMap.addOnMapClickListener(this);
   }
 
   @Override
@@ -315,9 +330,7 @@ public static Boolean layeridCreated;
 
       if(this.directionsRoute==null) {
         this.directionsRoute = directionsRoute;
-//        ws = new WeatherService(directionsRoute, timezone, interval, jstarttime, travelmode);
-//        ws.setListener(NavigationView.this);
-//        ws.execute();
+
       }
     }
   }
@@ -768,13 +781,14 @@ public static Boolean layeridCreated;
 
   @Override
   public void OnWeatherDataListReady(Map<Integer, mStep> msteps) {
+
        this.msteps=msteps;
   }
 
   @Override
   public void onWeatherOfPointReady(int id, mPoint mpoint) {
     String pid =id+"";
- //   layeridlist.add(pid);
+    layeridlist.add(pid);
 
 
     weatherUtils.addMarkers(new weatherIconMap().getWeatherResource(mpoint.getWeather_data().getIcon()), pid, pid,
@@ -786,7 +800,7 @@ public static Boolean layeridCreated;
   public void onWeatherOfStepReady(int step_id, mStep mstep) {
 
     String id=step_id+"";
- //   layeridlist.add(id);
+   layeridlist.add(id);
     weatherUtils.addMarkers(new weatherIconMap().getWeatherResource(mstep.getWeatherdata().getIcon()), id, id, mstep.getStep().maneuver().location(), id, id);
 
   }
@@ -795,6 +809,35 @@ public static Boolean layeridCreated;
   public void onWeatherDataListProgressChange(int progress) {
 
   }
+
+  void updateWeather(DirectionsRoute route, int currStep, StepCorrection correction){
+
+      if(wus==null || wus.getStatus()!=AsyncTask.Status.RUNNING || wus.getStatus()!=AsyncTask.Status.PENDING) {
+        Log.d("updating weather :",currStep+"");
+        if (layeridlist.size() > 0) {
+          weatherUtils.removeWeatherIcons(layeridlist);
+        }
+        msteps = null;
+        jstarttime = Calendar.getInstance().getTimeInMillis();
+        wus = new WeatherUpdateService(route, timezone, interval, jstarttime, travelmode, currStep,correction);
+        wus.setListener(NavigationView.this);
+        wus.execute();
+      }else{
+        System.out.println("weather update is already running/pending or weatherobj!=null");
+      }
+  }
+
+
+
+
+  @Override
+  public boolean onMapClick(@NonNull LatLng point) {
+    if(msteps!=null && layeridlist.size()>0)
+    weatherUtils.mapOnClick(point,layeridlist.toArray(new String[layeridlist.size()]),msteps);
+    return false;
+  }
+
+
 
 
 }

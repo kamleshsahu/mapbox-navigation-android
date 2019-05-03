@@ -17,6 +17,7 @@ import WeatherService.Methods.IntermediatePointsUpdater;
 import WeatherService.Methods.PointMatrixForAll;
 import WeatherService.Methods.WeatherFinder;
 import WeatherService.Models.Darkskyapi;
+import WeatherService.Models.StepCorrection;
 import WeatherService.Models.mPoint;
 import WeatherService.Models.mStep;
 
@@ -46,15 +47,16 @@ public class WeatherUpdateService extends AsyncTask<Void,Object,Void>
     int totalpoints;
     int count=0;
     int currStep=0;
+    StepCorrection correction;
 
-
-    public WeatherUpdateService(DirectionsRoute routedata, String timezoneid, long interval, long jstarttime, String travelmode, int currStep) {
+    public WeatherUpdateService(DirectionsRoute routedata, String timezoneid, long interval, long jstarttime, String travelmode, int currStep,StepCorrection correction) {
         this.routedata = routedata;
         this.timezoneid = timezoneid;
         this.interval = interval;
         this.jstarttime = jstarttime;
         this.travelmode = travelmode;
         this.currStep=currStep;
+        this.correction=correction;
         queue=new HashSet<>();
     }
 
@@ -67,11 +69,11 @@ public class WeatherUpdateService extends AsyncTask<Void,Object,Void>
         this.msteps = msteps;
 
         queue.addAll(msteps.keySet());
-//        for(int key:msteps.keySet()){
-//            Map<Integer,mPoint> interms;
-//            if((interms=msteps.get(key).getInterms())!=null)
-//            queue.addAll(interms.keySet());
-//        }
+        for(int key:msteps.keySet()){
+            Map<Integer,mPoint> interms;
+            if((interms=msteps.get(key).getInterms())!=null)
+            queue.addAll(interms.keySet());
+        }
         totalpoints=queue.size();
 
         for (Map.Entry<Integer, mStep> mstep : msteps.entrySet()) {
@@ -82,7 +84,7 @@ public class WeatherUpdateService extends AsyncTask<Void,Object,Void>
                     mstep.getValue().getSDFTime());
         }
 
-   //     pointMatrixs.calc(msteps,travelmode);
+        pointMatrixs.calc(msteps,travelmode);
     }
 
     @Override
@@ -105,12 +107,12 @@ public class WeatherUpdateService extends AsyncTask<Void,Object,Void>
         int step_id=id-(id%1000);
 
         if(id%1000 != 0) {
-//            mPoint mpoint = msteps.get(step_id).getInterms().get(id);
-//            mpoint.setWeather_data(response.getCurrently());
-//            mpoint.setDisplay_arrtime(formatTimeforDisp(response.getCurrently().getTime(),response.getTimezone()));
-//
-//            if(listener!=null)
-//                listener.onWeatherOfPointReady(id,mpoint);
+            mPoint mpoint = msteps.get(step_id).getInterms().get(id);
+            mpoint.setWeather_data(response.getCurrently());
+            mpoint.setDisplay_arrtime(formatTimeforDisp(response.getCurrently().getTime(),response.getTimezone()));
+
+            if(listener!=null)
+                listener.onWeatherOfPointReady(id,mpoint);
         }
         else
             {
@@ -142,9 +144,9 @@ public class WeatherUpdateService extends AsyncTask<Void,Object,Void>
     @Override
     protected Void doInBackground(Void... voids) {
         fn = new IntermediatePointsUpdater(this);
- //       pointMatrixs = new PointMatrixForAll(this);
+        pointMatrixs = new PointMatrixForAll(this);
         wfs = new WeatherFinder(this);
-        fn.extractListofPoints(interval,routedata,timezoneid,jstarttime,travelmode,currStep);
+        fn.extractListofPoints(interval,routedata,timezoneid,jstarttime,travelmode,currStep,correction);
         return null;
     }
     //        public static void main(String[] args) {

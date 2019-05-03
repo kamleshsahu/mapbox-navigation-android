@@ -17,7 +17,6 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
-import com.mapbox.mapboxsdk.style.sources.Source;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +24,6 @@ import java.util.Map;
 
 import WeatherService.Models.CustomDialogClass;
 import WeatherService.Models.mStep;
-
-import static com.mapbox.services.android.navigation.ui.v5.NavigationView.layeridCreated;
 
 
 /**
@@ -117,34 +114,22 @@ public class weatherUI_utils {
 //
 //    }
 
-    public void removeWeatherIcons(List<String> layeridlist, List<Source> markersourcelist){
+    public void removeWeatherIcons(List<String> layeridlist){
 
         for(int i=0;i<layeridlist.size();i++) {
-            mapboxStyle.removeLayer(layeridlist.get(i));
-            mapboxStyle.removeImage(layeridlist.get(i));
+            String id=layeridlist.get(i);
+            mapboxStyle.removeLayer(id);
+            mapboxStyle.removeImage(id);
+            mapboxStyle.removeSource(id);
         }
-
-        for(int i=0;i<markersourcelist.size();i++){
-            mapboxStyle.removeSource(markersourcelist.get(i));
-
-        }
-
-       layeridCreated = false;
-        //System.out.println("all removed");
         layeridlist=new ArrayList<>();
-        markersourcelist=new ArrayList<>();
     }
 
-    public void mapOnClick(LatLng point, List<String> layeridlist, String[] layerids, Map<Integer,mStep> msteps) {
+    public void mapOnClick(LatLng point, String[] layerids, Map<Integer,mStep> msteps) {
         final PointF pointf = mapboxMap.getProjection().toScreenLocation(point);
 
         RectF rectF = new RectF(pointf.x - 10, pointf.y - 10, pointf.x + 10, pointf.y + 10);
-        //        String layerids[] = {"S1", "S2","S3","S4","S5","S6","S7","S8","S9"};
-        //        List<String> layeridlist=new ArrayList<>();
-        if (!layeridCreated) {
-            //               Collections.reverse(layeridlist);
-            layerids = layeridlist.toArray(new String[layeridlist.size()]);
-        }
+
         List<Feature> features = mapboxMap.queryRenderedFeatures(rectF, layerids);
 
         try {
