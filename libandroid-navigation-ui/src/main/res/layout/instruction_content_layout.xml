@@ -42,7 +42,7 @@
             android:gravity="center"
             android:includeFontPadding="false"
             android:maxLines="1"
-            android:textColor="?attr/navigationViewBannerSecondaryText"
+            android:textColor="#ffffff"
             android:textSize="22sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -52,6 +52,7 @@
     </android.support.constraint.ConstraintLayout>
 
     <LinearLayout
+        android:layout_marginLeft="3dp"
         android:id="@+id/instructionLayoutText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -63,7 +64,15 @@
         app:layout_constraintStart_toEndOf="@id/guideline"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.65">
-
+<LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
         <TextView
             android:id="@+id/stepPrimaryText"
             android:layout_width="match_parent"
@@ -73,7 +82,7 @@
             android:includeFontPadding="false"
             android:maxLines="1"
             android:minHeight="35dp"
-            android:textColor="?attr/navigationViewBannerPrimaryText"
+            android:textColor="#ffffff"
             android:textSize="30sp"
             android:textStyle="bold"
             tools:text="I-580 South"/>
@@ -88,10 +97,57 @@
             android:lineSpacingMultiplier="0.8"
             android:maxLines="1"
             android:minHeight="31dp"
-            android:textColor="?attr/navigationViewBannerSecondaryText"
+            android:textColor="#ffffff"
             android:textSize="26sp"
             android:textStyle="bold"
             tools:text="San Jose / Cupertino"/>
+
+    </LinearLayout>
+   <LinearLayout
+       android:gravity="center_vertical"
+       android:orientation="vertical"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content">
+       <ImageView
+           android:layout_gravity="center_horizontal"
+           android:src="@drawable/rain"
+           android:layout_width="50dp"
+           android:layout_height="50dp" />
+       <TextView
+           android:textColor="#ffffff"
+           android:textSize="14sp"
+           android:layout_gravity="center_horizontal"
+           android:text="Rainy"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content" />
+
+   </LinearLayout>
+
+</LinearLayout>
+<LinearLayout
+    android:layout_marginTop="5dp"
+    android:layout_gravity="center_vertical"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <TextView
+        android:textColor="#ffffff"
+        android:textSize="14sp"
+        android:layout_gravity="center_vertical"
+        android:text="8:00 PM"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" />
+    <TextView
+
+
+        android:textColor="#ffffff"
+        android:textSize="14sp"
+        android:gravity="center_horizontal"
+        android:text="45°C"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content" />
+</LinearLayout>
 
     </LinearLayout>
 
