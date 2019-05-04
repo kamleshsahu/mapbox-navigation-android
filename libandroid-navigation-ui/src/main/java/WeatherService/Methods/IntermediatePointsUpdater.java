@@ -131,11 +131,13 @@ public class IntermediatePointsUpdater {
                 int next = (int) interval;
 
 
-                if(k==currStep+1 && correction!=null){
+                if(k==currStep) {
+                    stepstartlocation=correction.getNewlocation();
+                    next+=correction.getDistfromstepstart();
+                }
+                else if(k==currStep+1 && correction!=null){
                         aft_distance += correction.getNewdistance();
                         aft_duration += correction.getNewduration();
-                        next=correction.getDistfromstepstart();
-                        stepstartlocation=correction.getNewlocation();
                 }else if(k>currStep){
                         aft_distance += steps.get(k - 1).distance();
                         aft_duration += steps.get(k - 1).duration();

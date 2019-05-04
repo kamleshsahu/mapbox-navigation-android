@@ -183,6 +183,8 @@ public class MapboxNavigationActivity extends AppCompatActivity
   List<Milestone> mycustomMilestone(){
 
     List<Milestone> list=new ArrayList<>();
+    list.add(new StepMilestone.Builder().setIdentifier(1000)
+            .setTrigger(Trigger.eq(TriggerProperty.FIRST_STEP,1)).build());
           list.add(new StepMilestone.Builder().setIdentifier(1000)
           .setTrigger(Trigger.eq(TriggerProperty.NEW_STEP,1)).build());
     return list;
@@ -191,12 +193,14 @@ public class MapboxNavigationActivity extends AppCompatActivity
   @Override
   public void onMilestoneEvent(RouteProgress routeProgress, String instruction, Milestone milestone) {
 
-
+// &&
     if(milestone.getIdentifier()==1000){
+      Log.d("new step :",""+routeProgress.currentLegProgress().stepIndex());
      setnextMilestone(1000);
-     navigationView.updateWeather(routeProgress.directionsRoute(),
-             routeProgress.currentLegProgress().stepIndex(),
-             null);
+//     if(routeProgress.currentLegProgress().currentStep().distance()>1000)
+//     navigationView.updateWeather(routeProgress.directionsRoute(),
+//             routeProgress.currentLegProgress().stepIndex(),
+//             null);
     }
 
   }
@@ -205,7 +209,7 @@ public class MapboxNavigationActivity extends AppCompatActivity
 
   void setnextMilestone(int val){
     synchronized(this){
-      this.nextMilestone += val;
+      this.nextMilestone = val;
     }
   }
    int getMilestone(){
@@ -223,9 +227,8 @@ public class MapboxNavigationActivity extends AppCompatActivity
       navigationView.updateWeather(routeProgress.directionsRoute()
               ,routeProgress.currentLegProgress().stepIndex(),
               getCorrection(location,routeProgress));
+     }
     }
-
-  }
 
   StepCorrection getCorrection(Location location,RouteProgress routeProgress){
     int newdist=(int)routeProgress.currentLegProgress().currentStepProgress().distanceRemaining();

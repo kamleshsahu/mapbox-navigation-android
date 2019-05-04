@@ -11,7 +11,7 @@ public class StepCorrection {
     int newdistance;
     int newduration;
     Point newlocation;
-    int distfromstepstart=0;
+    int distfromstepstart;
 
     public StepCorrection(int newdistance, int newduration, Point newlocation,int distfromstepstart) {
         this.newdistance = newdistance;

@@ -48,27 +48,31 @@ public class weatherUI_utils {
 
     public void addMarkers (int iconid, String MARKER_IMAGE, String MARKER_SOURCE, Point point, String
             MARKER_STYLE_LAYER, String index){
-        List<Feature> features = new ArrayList<>();
+        try {
+            List<Feature> features = new ArrayList<>();
         /* Source: A data source specifies the geographic coordinate where the image marker gets placed. */
-        //  features.add(Feature.fromGeometry(Point.fromLngLat(-78.7448, 40.2489)));
+            //  features.add(Feature.fromGeometry(Point.fromLngLat(-78.7448, 40.2489)));
 
-        features.add(Feature.fromGeometry(point, null, index));
-        FeatureCollection featureCollection = FeatureCollection.fromFeatures(features);
-        GeoJsonSource source = new GeoJsonSource(MARKER_SOURCE, featureCollection);
-        mapboxStyle.removeSource(source.getId());
-        mapboxStyle.addSource(source);
+            features.add(Feature.fromGeometry(point, null, index));
+            FeatureCollection featureCollection = FeatureCollection.fromFeatures(features);
+            GeoJsonSource source = new GeoJsonSource(MARKER_SOURCE, featureCollection);
+            mapboxStyle.removeSource(source.getId());
+            mapboxStyle.addSource(source);
 
    /* Style layer: A style layer ties together the source and image and specifies how they are displayed on the map. */
-        SymbolLayer markerStyleLayer = new SymbolLayer(MARKER_STYLE_LAYER, MARKER_SOURCE)
-                .withProperties(
-                        PropertyFactory.iconAllowOverlap(true),
-                        PropertyFactory.iconImage(MARKER_IMAGE)
-                );
+            SymbolLayer markerStyleLayer = new SymbolLayer(MARKER_STYLE_LAYER, MARKER_SOURCE)
+                    .withProperties(
+                            PropertyFactory.iconAllowOverlap(true),
+                            PropertyFactory.iconImage(MARKER_IMAGE)
+                    );
 
-        Bitmap icon = BitmapFactory.decodeResource(
-                context.getResources(), iconid);
-        mapboxStyle.addLayer(markerStyleLayer);
-        mapboxStyle.addImage(MARKER_IMAGE, icon);
+            Bitmap icon = BitmapFactory.decodeResource(
+                    context.getResources(), iconid);
+            mapboxStyle.addLayer(markerStyleLayer);
+            mapboxStyle.addImage(MARKER_IMAGE, icon);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

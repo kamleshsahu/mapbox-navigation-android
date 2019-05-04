@@ -772,6 +772,9 @@ public class NavigationView extends CoordinatorLayout implements
     navigationViewModel.onDestroy(isChangingConfigurations());
     ImageCreator.getInstance().shutdown();
     navigationMap = null;
+    wus.cancel(true);
+    wus=null;
+
   }
 
   @Override
@@ -802,7 +805,7 @@ public class NavigationView extends CoordinatorLayout implements
 
     String id=step_id+"";
    layeridlist.add(id);
-    weatherUtils.addMarkers(new weatherIconMap().getWeatherResource(mstep.getWeatherdata().getIcon()), id, id, mstep.getStep().maneuver().location(), id, id);
+    weatherUtils.addMarkers(new weatherIconMap().getWeatherResource(mstep.getWeatherdata().getIcon()), id, id, mstep.getStep_StartPoint(), id, id);
 
   }
 

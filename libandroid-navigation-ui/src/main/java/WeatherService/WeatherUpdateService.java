@@ -31,8 +31,6 @@ public class WeatherUpdateService extends AsyncTask<Void,Object,Void>
         IntermediatePointListener
 {
 
-
-
     private DirectionsRoute routedata=null;
     private String timezoneid;
     private long interval=50000;
@@ -149,7 +147,7 @@ public class WeatherUpdateService extends AsyncTask<Void,Object,Void>
         fn.extractListofPoints(interval,routedata,timezoneid,jstarttime,travelmode,currStep,correction);
         return null;
     }
-    //        public static void main(String[] args) {
+//        public static void main(String[] args) {
 //        Point sp=Point.fromLngLat(-105.2705, 40.015);
 //        Point dp=Point.fromLngLat(-104.9653, 39.7348);
 //        String profile= DirectionsCriteria.PROFILE_DRIVING;
