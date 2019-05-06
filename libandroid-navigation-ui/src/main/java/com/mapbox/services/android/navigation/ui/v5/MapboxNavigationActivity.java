@@ -11,23 +11,21 @@ import android.util.Log;
 
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.api.directions.v5.models.LegStep;
-import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
 import com.mapbox.services.android.navigation.v5.milestone.Milestone;
 import com.mapbox.services.android.navigation.v5.milestone.MilestoneEventListener;
-import com.mapbox.services.android.navigation.v5.milestone.StepMilestone;
-import com.mapbox.services.android.navigation.v5.milestone.Trigger;
-import com.mapbox.services.android.navigation.v5.milestone.TriggerProperty;
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigationOptions;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationConstants;
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import WeatherService.Models.StepCorrection;
+import WeatherService.Interface.NextMilestoneSetter;
+
+import static WeatherService.Methods.myUtils.getCorrection;
+import static WeatherService.Methods.myUtils.mycustomMilestone;
 
 /**
  * Serves as a launching point for the custom drop-in UI, {@link NavigationView}.
@@ -38,16 +36,18 @@ public class MapboxNavigationActivity extends AppCompatActivity
         implements OnNavigationReadyCallback,
         MilestoneEventListener,
   NavigationListener,
-        ProgressChangeListener
-{
+        ProgressChangeListener, NextMilestoneSetter {
 
   private NavigationView navigationView;
 
   int nextMilestone;
 
+
+
   public MapboxNavigationActivity() {
     nextMilestone = 0;
   }
+
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,6 +55,7 @@ public class MapboxNavigationActivity extends AppCompatActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_navigation);
     navigationView = findViewById(R.id.navigationView);
+    navigationView.setListener(this);
     navigationView.onCreate(savedInstanceState);
     navigationView.setActivity(this);
     initialize();
@@ -180,23 +181,13 @@ public class MapboxNavigationActivity extends AppCompatActivity
   }
 
 
-  List<Milestone> mycustomMilestone(){
-
-    List<Milestone> list=new ArrayList<>();
-    list.add(new StepMilestone.Builder().setIdentifier(1000)
-            .setTrigger(Trigger.eq(TriggerProperty.FIRST_STEP,1)).build());
-          list.add(new StepMilestone.Builder().setIdentifier(1000)
-          .setTrigger(Trigger.eq(TriggerProperty.NEW_STEP,1)).build());
-    return list;
-  }
-
   @Override
   public void onMilestoneEvent(RouteProgress routeProgress, String instruction, Milestone milestone) {
 
 // &&
     if(milestone.getIdentifier()==1000){
       Log.d("new step :",""+routeProgress.currentLegProgress().stepIndex());
-     setnextMilestone(1000);
+     setnextMilestone(200);
 //     if(routeProgress.currentLegProgress().currentStep().distance()>1000)
 //     navigationView.updateWeather(routeProgress.directionsRoute(),
 //             routeProgress.currentLegProgress().stepIndex(),
@@ -230,13 +221,9 @@ public class MapboxNavigationActivity extends AppCompatActivity
      }
     }
 
-  StepCorrection getCorrection(Location location,RouteProgress routeProgress){
-    int newdist=(int)routeProgress.currentLegProgress().currentStepProgress().distanceRemaining();
-    int newduration=(int)routeProgress.currentLegProgress().currentStepProgress().durationRemaining();
-    Point newlocation=Point.fromLngLat(location.getLongitude(),location.getLatitude());
-    int distfrom_stepstart=(int)routeProgress.currentLegProgress().currentStepProgress().distanceTraveled();
-    return new StepCorrection(newdist,newduration,newlocation,distfrom_stepstart);
+
+  @Override
+  public void updateNextMilestone(int val) {
+    setnextMilestone(val);
   }
-
-
 }

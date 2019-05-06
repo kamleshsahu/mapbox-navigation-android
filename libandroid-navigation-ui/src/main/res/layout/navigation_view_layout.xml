@@ -13,7 +13,33 @@
         android:layout_height="match_parent"
         app:mapbox_uiAttribution="false"
         app:mapbox_uiCompass="false"
-        app:mapbox_uiLogo="false"/>
+        app:mapbox_uiLogo="false"
+        >
+
+
+    <!--<View-->
+        <!--android:id="@+id/spacer"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="6dp"-->
+        <!--android:layout_gravity="top"-->
+        <!--android:background="@android:color/transparent"-->
+        <!--app:layout_anchorGravity="top"/>-->
+    </com.mapbox.mapboxsdk.maps.MapView>
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <android.support.design.widget.FloatingActionButton
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="16dp"
+        android:id="@+id/weatherRefreshButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="80dp"
+        android:tint="@color/design_default_color_primary"
+        app:srcCompat="@drawable/ic_refresh" />
+</RelativeLayout>
+
 
     <ImageView
         android:id="@+id/screenshotView"

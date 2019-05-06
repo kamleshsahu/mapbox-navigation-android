@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatDelegate;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -36,6 +37,8 @@ import com.mapbox.services.android.navigation.ui.v5.listeners.InstructionListLis
 import com.mapbox.services.android.navigation.ui.v5.listeners.NavigationListener;
 import com.mapbox.services.android.navigation.ui.v5.listeners.SpeechAnnouncementListener;
 import com.mapbox.services.android.navigation.ui.v5.voice.SpeechAnnouncement;
+import com.mapbox.services.android.navigation.v5.milestone.Milestone;
+import com.mapbox.services.android.navigation.v5.milestone.MilestoneEventListener;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
@@ -46,9 +49,12 @@ import retrofit2.Call;
 import retrofit2.Response;
 import timber.log.Timber;
 
+import static WeatherService.Methods.myUtils.getCorrection;
+import static WeatherService.Methods.myUtils.mycustomMilestone;
+
 public class EmbeddedNavigationActivity extends AppCompatActivity implements OnNavigationReadyCallback,
   NavigationListener, ProgressChangeListener, InstructionListListener, SpeechAnnouncementListener,
-  BannerInstructionsListener {
+  BannerInstructionsListener, MilestoneEventListener {
 
   private static final Point ORIGIN = Point.fromLngLat(-77.03194990754128, 38.909664963450105);
   private static final Point DESTINATION = Point.fromLngLat(-77.0270025730133, 38.91057077063121);
@@ -61,6 +67,12 @@ public class EmbeddedNavigationActivity extends AppCompatActivity implements OnN
 
   private boolean bottomSheetVisible = true;
   private boolean instructionListShown = false;
+  Point currentLocation;
+  int nextMilestone;
+
+  public EmbeddedNavigationActivity() {
+    nextMilestone = 0;
+  }
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -167,6 +179,16 @@ public class EmbeddedNavigationActivity extends AppCompatActivity implements OnN
   @Override
   public void onProgressChange(Location location, RouteProgress routeProgress) {
     setSpeed(location);
+
+    Log.d("dist travelled :",String.valueOf(routeProgress.currentLegProgress().currentStepProgress().distanceTraveled()));
+
+    if(routeProgress.currentLegProgress().currentStepProgress().distanceTraveled()>=getMilestone()){
+      setnextMilestone(getMilestone()+1000);
+
+      navigationView.updateWeather(routeProgress.directionsRoute()
+              ,routeProgress.currentLegProgress().stepIndex(),
+              getCorrection(location,routeProgress));
+    }
   }
 
   @Override
@@ -200,6 +222,8 @@ public class EmbeddedNavigationActivity extends AppCompatActivity implements OnN
         .instructionListListener(this)
         .speechAnnouncementListener(this)
         .bannerInstructionsListener(this)
+              .milestones(mycustomMilestone())
+              .milestoneEventListener(this)
         .offlineRoutingTilesPath(obtainOfflineDirectory())
         .offlineRoutingTilesVersion(obtainOfflineTileVersion());
     setBottomSheetCallback(options);
@@ -342,4 +366,29 @@ public class EmbeddedNavigationActivity extends AppCompatActivity implements OnN
       speedWidget.setVisibility(View.VISIBLE);
     }
   }
+
+  void setnextMilestone(int val){
+    synchronized(this){
+      this.nextMilestone = val;
+    }
+  }
+  int getMilestone(){
+    return nextMilestone;
+  }
+
+  @Override
+  public void onMilestoneEvent(RouteProgress routeProgress, String instruction, Milestone milestone) {
+
+// &&
+    if(milestone.getIdentifier()==1000){
+      Log.d("new step :",""+routeProgress.currentLegProgress().stepIndex());
+      setnextMilestone(1000);
+//     if(routeProgress.currentLegProgress().currentStep().distance()>1000)
+//     navigationView.updateWeather(routeProgress.directionsRoute(),
+//             routeProgress.currentLegProgress().stepIndex(),
+//             null);
+    }
+
+  }
+
 }

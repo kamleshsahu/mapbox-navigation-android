@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
@@ -52,6 +53,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import WeatherService.Interface.NextMilestoneSetter;
 import WeatherService.Interface.WeatherServiceListener;
 import WeatherService.Models.StepCorrection;
 import WeatherService.Models.mPoint;
@@ -119,7 +121,8 @@ public class NavigationView extends CoordinatorLayout implements
   String travelmode;
   long jstarttime;
   long interval;
-
+  private View.OnClickListener weatherRefreshListener;
+  private FloatingActionButton weatherRefreshButton;
 
   List<String> layeridlist;
 
@@ -152,8 +155,13 @@ public class NavigationView extends CoordinatorLayout implements
 
   public void setActivity(Activity activity){
     this.activity=activity;
-  }
 
+
+  }
+  NextMilestoneSetter listener;
+  public void setListener(NextMilestoneSetter listener) {
+    this.listener = listener;
+  }
   /**
    * Uses savedInstanceState as a cue to restore state (if not null).
    *
@@ -162,6 +170,15 @@ public class NavigationView extends CoordinatorLayout implements
   public void onCreate(@Nullable Bundle savedInstanceState) {
     mapView.onCreate(savedInstanceState);
     updatePresenterState(savedInstanceState);
+
+    weatherRefreshButton=findViewById(R.id.weatherRefreshButton);
+    weatherRefreshButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        listener.updateNextMilestone(200);
+      }
+    });
+
   }
 
   /**
@@ -779,14 +796,14 @@ public class NavigationView extends CoordinatorLayout implements
 
   @Override
   public void onError(String etitle, String emsg) {
-
+    updateFABbutton();
   }
 
   @Override
   public void OnWeatherDataListReady(Map<Integer, mStep> msteps) {
 
        this.msteps=msteps;
-
+       updateFABbutton();
   }
 
   @Override
@@ -814,12 +831,13 @@ public class NavigationView extends CoordinatorLayout implements
 
   }
 
-  void updateWeather(DirectionsRoute route, int currStep, StepCorrection correction){
+  public void updateWeather(DirectionsRoute route, int currStep, StepCorrection correction){
 
     if(wus!=null)
     Log.d("asynctask status:",wus.getStatus().name());
 
       if(wus==null || wus.getStatus()!=AsyncTask.Status.RUNNING || wus.getStatus()!=AsyncTask.Status.PENDING) {
+        updateFABbutton();
         Log.d("updating weather :",currStep+"");
         if (layeridlist.size() > 0) {
           weatherUtils.removeWeatherIcons(layeridlist);
@@ -844,7 +862,14 @@ public class NavigationView extends CoordinatorLayout implements
     return false;
   }
 
-
-
+  Boolean weatherupdateRunning(){
+      if(wus==null)return false;
+        return wus.getStatus()==AsyncTask.Status.RUNNING || wus.getStatus()==AsyncTask.Status.PENDING;
+  }
+  void updateFABbutton(){
+    if(weatherupdateRunning())
+      weatherRefreshButton.setEnabled(false);
+    else weatherRefreshButton.setEnabled(true);
+  }
 
 }
