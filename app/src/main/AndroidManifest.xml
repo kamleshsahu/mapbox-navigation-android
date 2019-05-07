@@ -81,7 +81,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity"/>
         </activity>
-
+        <activity
+            android:name=".activity.navigationui.NavigationLauncherActivity_Simulate"
+            android:label="@string/title_navigation_launcher">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
         <activity
             android:name=".NavigationSettingsActivity"
             android:label="@string/settings">

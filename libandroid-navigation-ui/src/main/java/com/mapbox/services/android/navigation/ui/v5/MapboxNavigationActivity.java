@@ -187,7 +187,11 @@ public class MapboxNavigationActivity extends AppCompatActivity
 // &&
     if(milestone.getIdentifier()==1000){
       Log.d("new step :",""+routeProgress.currentLegProgress().stepIndex());
-     setnextMilestone(200);
+      if(routeProgress.currentLegProgress().currentStep().duration()<200) {
+        setnextMilestone(200);
+      }else{
+        setnextMilestone(0);
+      }
 //     if(routeProgress.currentLegProgress().currentStep().distance()>1000)
 //     navigationView.updateWeather(routeProgress.directionsRoute(),
 //             routeProgress.currentLegProgress().stepIndex(),
@@ -213,7 +217,7 @@ public class MapboxNavigationActivity extends AppCompatActivity
     Log.d("dist travelled :",String.valueOf(routeProgress.currentLegProgress().currentStepProgress().distanceTraveled()));
 
     if(routeProgress.currentLegProgress().currentStepProgress().distanceTraveled()>=getMilestone()){
-      setnextMilestone(getMilestone()+1000);
+      setnextMilestone(getMilestone()+5000);
 
       navigationView.updateWeather(routeProgress.directionsRoute()
               ,routeProgress.currentLegProgress().stepIndex(),

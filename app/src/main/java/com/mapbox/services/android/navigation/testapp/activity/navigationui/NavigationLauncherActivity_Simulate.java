@@ -67,7 +67,7 @@ import timber.log.Timber;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
-public class NavigationLauncherActivity extends AppCompatActivity
+public class NavigationLauncherActivity_Simulate extends AppCompatActivity
         implements OnMapReadyCallback,
   MapboxMap.OnMapLongClickListener, OnRouteSelectionChangeListener {
 
@@ -343,8 +343,8 @@ public class NavigationLauncherActivity extends AppCompatActivity
     }
 
     NavigationLauncherOptions.Builder optionsBuilder = NavigationLauncherOptions.builder()
-      .shouldSimulateRoute(getShouldSimulateRouteFromSharedPreferences());
-     //       .shouldSimulateRoute(true);
+    //  .shouldSimulateRoute(getShouldSimulateRouteFromSharedPreferences());
+            .shouldSimulateRoute(true);
     CameraPosition initialPosition = new CameraPosition.Builder()
       .target(new LatLng(currentLocation.latitude(), currentLocation.longitude()))
       .zoom(INITIAL_ZOOM)
@@ -424,15 +424,15 @@ public class NavigationLauncherActivity extends AppCompatActivity
 
   private static class NavigationLauncherLocationCallback implements LocationEngineCallback<LocationEngineResult> {
 
-    private final WeakReference<NavigationLauncherActivity> activityWeakReference;
+    private final WeakReference<NavigationLauncherActivity_Simulate> activityWeakReference;
 
-    NavigationLauncherLocationCallback(NavigationLauncherActivity activity) {
+    NavigationLauncherLocationCallback(NavigationLauncherActivity_Simulate activity) {
       this.activityWeakReference = new WeakReference<>(activity);
     }
 
     @Override
     public void onSuccess(LocationEngineResult result) {
-      NavigationLauncherActivity activity = activityWeakReference.get();
+      NavigationLauncherActivity_Simulate activity = activityWeakReference.get();
       if (activity != null) {
         Location location = result.getLastLocation();
         if (location == null) {

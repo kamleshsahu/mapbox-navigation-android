@@ -5,7 +5,9 @@ import android.arch.lifecycle.LifecycleObserver;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -131,6 +133,7 @@ public class NavigationView extends CoordinatorLayout implements
   Map<Integer, mStep> msteps;
   WeatherUpdateService wus;
 
+
   public NavigationView(Context context) {
     this(context, null);
   }
@@ -145,7 +148,7 @@ public class NavigationView extends CoordinatorLayout implements
     initializeView();
     timezone= Calendar.getInstance().getTimeZone().getID();
     travelmode= DirectionsCriteria.PROFILE_DRIVING;
-    interval = 1000;
+    interval = 5000;
     selectedroute = 0;
     layeridlist=new ArrayList<>();
 
@@ -789,21 +792,23 @@ public class NavigationView extends CoordinatorLayout implements
     navigationViewModel.onDestroy(isChangingConfigurations());
     ImageCreator.getInstance().shutdown();
     navigationMap = null;
+    if(wus!=null)
     wus.cancel(true);
-    wus=null;
+
+
 
   }
 
   @Override
   public void onError(String etitle, String emsg) {
-    updateFABbutton();
+    enablerefresh();
   }
 
   @Override
   public void OnWeatherDataListReady(Map<Integer, mStep> msteps) {
 
        this.msteps=msteps;
-       updateFABbutton();
+       enablerefresh();
   }
 
   @Override
@@ -837,7 +842,7 @@ public class NavigationView extends CoordinatorLayout implements
     Log.d("asynctask status:",wus.getStatus().name());
 
       if(wus==null || wus.getStatus()!=AsyncTask.Status.RUNNING || wus.getStatus()!=AsyncTask.Status.PENDING) {
-        updateFABbutton();
+        disablerefresh();
         Log.d("updating weather :",currStep+"");
         if (layeridlist.size() > 0) {
           weatherUtils.removeWeatherIcons(layeridlist);
@@ -859,17 +864,22 @@ public class NavigationView extends CoordinatorLayout implements
   public boolean onMapClick(@NonNull LatLng point) {
     if(msteps!=null && layeridlist.size()>0)
     weatherUtils.mapOnClick(point,layeridlist.toArray(new String[layeridlist.size()]),msteps);
+
     return false;
   }
 
-  Boolean weatherupdateRunning(){
-      if(wus==null)return false;
-        return wus.getStatus()==AsyncTask.Status.RUNNING || wus.getStatus()==AsyncTask.Status.PENDING;
-  }
-  void updateFABbutton(){
-    if(weatherupdateRunning())
-      weatherRefreshButton.setEnabled(false);
-    else weatherRefreshButton.setEnabled(true);
+  void enablerefresh(){
+    weatherRefreshButton.setEnabled(true);
+    findViewById(R.id.weather_progressbar).setVisibility(GONE);
+    weatherRefreshButton.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.mapbox_navigation_view_color_banner_background)));
+
   }
 
+
+  void disablerefresh(){
+    findViewById(R.id.weather_progressbar).setVisibility(VISIBLE);
+    weatherRefreshButton.setEnabled(false);
+    weatherRefreshButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#BDBDBD")));
+
+  }
 }
