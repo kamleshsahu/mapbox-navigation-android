@@ -37,13 +37,13 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
     final List<SampleItem> samples = new ArrayList<>(Arrays.asList(
       new SampleItem(
-        getString(R.string.title_navigation_launcher),
+        "Navigate the Route",
         "Try while driving",
         NavigationLauncherActivity.class
       ),
             new SampleItem(
-                    "Navigation Demo(Simulate)",
-                    "Simulate the Route using Simulator",
+                    "Navigation Demo(Simulator)",
+                    "Simulate the Navigation",
                     NavigationLauncherActivity_Simulate.class
             )
 //            ,
