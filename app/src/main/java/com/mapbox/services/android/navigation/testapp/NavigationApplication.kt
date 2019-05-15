@@ -23,7 +23,7 @@ class NavigationApplication : MultiDexApplication() {
     super.onCreate()
     instance = this
     setupTimber()
-    setupStrictMode()
+   // setupStrictMode()
     setupCanary()
     setupMapbox()
     setupCrashMonitor()
